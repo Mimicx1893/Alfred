@@ -1,0 +1,20 @@
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+  20%, 22%, 24%, 55% { opacity: .28; }
+}
+
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-flicker { animation: flicker 7s linear infinite; }
+.animate-radarSpin { animation: radarSpin 12s linear infinite; }
+
+.suit-lab-vignette {
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, .42) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flicker, .animate-radarSpin, .animate-rotateSlow, .animate-rotateReverse, .animate-pulseGlow { animation: none; }
+}
