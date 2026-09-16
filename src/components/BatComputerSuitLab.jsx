@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import useStore from '../store/useStore';
 import BatcavePanel from './BatcavePanel';
 import BatcaveHud from './BatcaveHud';
@@ -18,123 +17,118 @@ const SYSTEMS = [
   { id: 'hud', name: 'HEADS-UP DISPLAY', uptime: '99.99%', status: 'active', load: 22 },
 ];
 
+const formatTime = () => new Date().toLocaleTimeString('en-US', {
+  hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+});
+
+function Meter({ value }) {
+  return (
+    <div className="h-1 overflow-hidden rounded-full bg-gotham-border" aria-label={`${value}% load`}>
+      <div className="h-full rounded-full bg-batCyan shadow-[0_0_8px_#00d4ff] transition-[width] duration-700" style={{ width: `${value}%` }} />
+    </div>
+  );
+}
+
 export default function BatComputerSuitLab() {
-  const [time, setTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  const [time, setTime] = useState(formatTime);
   const [selectedSystem, setSelectedSystem] = useState('power');
+  const [diagnosticRunning, setDiagnosticRunning] = useState(false);
   const { isConnected } = useStore();
+  const selected = useMemo(() => SYSTEMS.find(system => system.id === selectedSystem) || SYSTEMS[0], [selectedSystem]);
 
   useEffect(() => {
-    const interval = setInterval(() => setTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })), 1000);
-    return () => clearInterval(interval);
+    const interval = window.setInterval(() => setTime(formatTime()), 1000);
+    return () => window.clearInterval(interval);
   }, []);
 
-  const selected = useMemo(() => SYSTEMS.find(s => s.id === selectedSystem) || SYSTEMS[0], [selectedSystem]);
+  const runDiagnostic = () => {
+    setDiagnosticRunning(true);
+    window.setTimeout(() => setDiagnosticRunning(false), 1800);
+  };
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#0a0e14] font-hud select-none">
+    <section className="relative h-full min-h-0 w-full overflow-hidden bg-[#080c12] font-hud text-gotham-text select-none">
       <BatcaveScanlines />
-      <div className="absolute inset-0 pointer-events-none z-40 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#00d4ff 1px, transparent 1px), linear-gradient(90deg, #00d4ff 1px, transparent 1px)', backgroundSize: '80px 80px', boxShadow: 'inset 0 0 80px rgba(0,240,255,0.08)' }} />
-
       <BatcaveCornerBrackets />
+      <div className="pointer-events-none absolute inset-0 z-10 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(#00d4ff 1px, transparent 1px), linear-gradient(90deg, #00d4ff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
 
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 border-b border-batCyan/20 bg-[#0a0e14]/80 backdrop-blur-xl z-50">
-        <div className="flex items-center gap-4">
-          <div className="text-batCyan text-xs tracking-[0.3em] font-bold uppercase">BATCOMPUTER OS</div>
-          <div className="w-px h-4 bg-gotham-border" />
-          <div className="text-gotham-muted text-[10px] tracking-wider uppercase">Suit Lab // Diagnostics</div>
+      <header className="absolute inset-x-0 top-0 z-30 flex items-center justify-between border-b border-batCyan/20 bg-[#080c12]/90 px-4 py-3 backdrop-blur-xl sm:px-6">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.3em] text-batCyan">BATCOMPUTER OS</span>
+          <span className="h-4 w-px shrink-0 bg-gotham-border" />
+          <span className="truncate text-[10px] uppercase tracking-wider text-gotham-muted">Suit Lab // Diagnostics</span>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex shrink-0 items-center gap-3 sm:gap-6">
           <BatcaveStatusLight status={isConnected ? 'active' : 'offline'} label={isConnected ? 'LINK ACTIVE' : 'LINK DOWN'} />
-          <div className="h-4 w-px bg-gotham-border" />
-          <span className="text-gotham-warning text-xs tracking-widest font-hud">{time}</span>
+          <span className="hidden h-4 w-px bg-gotham-border sm:block" />
+          <time className="text-xs tracking-widest text-gotham-warning" dateTime={time}>{time}</time>
         </div>
-      </div>
+      </header>
 
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 z-50 w-64">
-        <BatcavePanel title="SUIT SYSTEMS" glow>
-          <div className="space-y-2">
-            {SYSTEMS.map(system => (
-              <button
-                key={system.id}
-                onClick={() => setSelectedSystem(system.id)}
-                className={`w-full text-left px-3 py-2 rounded border transition-all ${
-                  selectedSystem === system.id
-                    ? 'bg-batCyan/10 border-batCyan/40 text-batCyan'
-                    : 'bg-gotham-dark border-gotham-border text-gotham-muted hover:text-gotham-text hover:border-gotham-accent/30'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] tracking-wider uppercase">{system.name}</span>
-                  <BatcaveStatusLight status={system.status} className="scale-75 origin-right" />
-                </div>
-                {selectedSystem === system.id && (
-                  <motion.div
-                    className="mt-2"
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <div className="h-1 w-full bg-gotham-border rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-batCyan"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${system.load}%` }}
-                        transition={{ duration: 0.6 }}
-                      />
+      <div className="relative z-20 flex h-full flex-col gap-4 overflow-y-auto px-4 pb-20 pt-20 sm:px-6 lg:block">
+        <div className="lg:absolute lg:left-6 lg:top-1/2 lg:w-64 lg:-translate-y-1/2">
+          <BatcavePanel title="SUIT SYSTEMS" glow>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+              {SYSTEMS.map(system => {
+                const active = selectedSystem === system.id;
+                return (
+                  <button key={system.id} type="button" onClick={() => setSelectedSystem(system.id)} aria-pressed={active} className={`w-full rounded border px-3 py-2 text-left transition-all ${active ? 'border-batCyan/50 bg-batCyan/10 text-batCyan shadow-[inset_2px_0_#00d4ff]' : 'border-gotham-border bg-gotham-dark text-gotham-muted hover:border-gotham-accent/40 hover:text-gotham-text'}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase tracking-wider">{system.name}</span>
+                      <BatcaveStatusLight status={system.status} className="origin-right scale-75" />
                     </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-[9px] text-gotham-muted">LOAD</span>
-                      <span className="text-[9px] text-batCyan">{system.load}%</span>
-                    </div>
-                  </motion.div>
-                )}
-              </button>
-            ))}
-          </div>
-        </BatcavePanel>
-      </div>
+                    {active && <div className="mt-2"><Meter value={system.load} /><div className="mt-1 flex justify-between text-[9px]"><span className="text-gotham-muted">LOAD</span><span>{system.load}%</span></div></div>}
+                  </button>
+                );
+              })}
+            </div>
+          </BatcavePanel>
+        </div>
 
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 z-50 w-72">
-        <BatcavePanel title={selected.name} glow>
-          <BatcaveHud
-            items={[
+        <div className="space-y-4 lg:absolute lg:right-6 lg:top-1/2 lg:w-72 lg:-translate-y-1/2">
+          <BatcavePanel title={selected.name} glow>
+            <BatcaveHud items={[
               { label: 'SYSTEM ID', value: selected.id.toUpperCase() },
               { label: 'STATUS', value: selected.status.toUpperCase(), color: selected.status === 'active' ? 'text-gotham-success' : 'text-gotham-warning' },
               { label: 'UPTIME', value: selected.uptime, color: 'text-batCyan' },
               { label: 'LOAD', value: `${selected.load}%`, color: selected.load > 50 ? 'text-gotham-warning' : 'text-gotham-success' },
               { label: 'TEMPERATURE', value: `${(35 + selected.load * 0.4).toFixed(1)}°C` },
               { label: 'INTEGRITY', value: '100%', color: 'text-gotham-success' },
-              { label: 'LAST DIAGNOSTIC', value: '2 MIN AGO' },
+              { label: 'LAST DIAGNOSTIC', value: diagnosticRunning ? 'RUNNING...' : '2 MIN AGO' },
               { label: 'NEXT SERVICE', value: '14 DAYS' },
-            ]}
-          />
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <button className="bg-gotham-dark border border-gotham-border text-gotham-text text-[10px] py-2 rounded hover:border-batCyan/50 hover:text-batCyan transition-all">RUN DIAGNOSTIC</button>
-            <button className="bg-batCyan/10 border border-batCyan/50 text-batCyan text-[10px] py-2 rounded hover:bg-batCyan/20 transition-all">CALIBRATE</button>
-          </div>
-        </BatcavePanel>
-
-        <BatcavePanel title="SUIT TELEMETRY" className="mt-4">
-          <BatcaveHud
-            items={[
+            ]} />
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button type="button" onClick={runDiagnostic} disabled={diagnosticRunning} className="rounded border border-gotham-border bg-gotham-dark py-2 text-[10px] text-gotham-text transition-all hover:border-batCyan/50 hover:text-batCyan disabled:cursor-wait disabled:opacity-60">{diagnosticRunning ? 'SCANNING...' : 'RUN DIAGNOSTIC'}</button>
+              <button type="button" className="rounded border border-batCyan/50 bg-batCyan/10 py-2 text-[10px] text-batCyan transition-all hover:bg-batCyan/20">CALIBRATE</button>
+            </div>
+          </BatcavePanel>
+          <BatcavePanel title="SUIT TELEMETRY">
+            <BatcaveHud items={[
               { label: 'ARMOR INTEGRITY', value: '100%', color: 'text-gotham-success' },
               { label: 'O2 RESERVE', value: '47 MIN', color: 'text-batCyan' },
               { label: 'HEART RATE', value: '72 BPM' },
               { label: 'NEURAL SYNC', value: 'STABLE', color: 'text-gotham-success' },
               { label: 'EXOSKELETON', value: 'ONLINE', color: 'text-gotham-success' },
-            ]}
-          />
-        </BatcavePanel>
+            ]} />
+          </BatcavePanel>
+        </div>
+
+        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
+          <div className="flex h-64 w-64 items-center justify-center rounded-full border border-batCyan/20 shadow-[0_0_80px_rgba(0,212,255,0.08)]">
+            <div className="flex h-44 w-44 items-center justify-center rounded-full border border-dashed border-batCyan/30"><span className="text-[9px] tracking-[0.35em] text-batCyan/50">SUIT CORE</span></div>
+          </div>
+        </div>
       </div>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-        <BatcavePanel className="px-6 py-3">
-          <div className="flex items-center gap-6 text-[10px] tracking-wider font-hud">
+      <div className="absolute bottom-3 left-1/2 z-30 w-[calc(100%-2rem)] -translate-x-1/2 sm:w-auto">
+        <BatcavePanel className="px-4 py-2 sm:px-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[10px] tracking-wider">
             <BatcaveStatusLight status="active" label="ALL SYSTEMS NOMINAL" pulse />
             <span className="text-gotham-muted">BATSUIT MK IV // PROTOTYPE</span>
             <span className="text-batCyan/60">BUILD 2026.09.08</span>
           </div>
         </BatcavePanel>
       </div>
-    </div>
+    </section>
   );
 }
