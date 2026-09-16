@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0a0a0f;
+  color: #c8c8d0;
+  font-family: 'Courier New', Courier, monospace;
+  overflow: hidden;
+  user-select: none;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #12121a;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a3a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00d4ff;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes barPulse {
+  0%, 100% { stroke-width: 2; opacity: 0.4; }
+  50% { stroke-width: 5; opacity: 1; }
+}
+
+@keyframes barListen {
+  0%, 100% { stroke-width: 2; opacity: 0.5; }
+  50% { stroke-width: 3; opacity: 0.8; }
+}
+
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotateReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+/* --- Batcave background keyframes --------------------------- */
+
+@keyframes pulseTower {
+  0%,100% {
+    box-shadow: 0 0 20px #ffb700, 0 0 60px #ffb700aa, 0 0 100px #ffb70055;
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 40px #ffb700, 0 0 90px #ffb700, 0 0 140px #ffb70088;
+    opacity: 0.9;
+  }
+}
+
+@keyframes beamSway {
+  0%,100% { transform: rotate(-1.5deg); }
+  50%     { transform: rotate(1.5deg); }
+}
+
+@keyframes scanDown {
+  0%   { top: -5%; }
+  100% { top: 105%; }
+}
+
+@keyframes flicker {
+  0%,19%,21%,23%,25%,54%,56%,100% { opacity: 1; }
+  20%,22%,24%,55%                { opacity: 0.25; }
+}
+
+@keyframes dashMove {
+  to { stroke-dashoffset: -120; }
+}
+
+@keyframes smoke {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.85; }
+  100% { transform: translateY(-90px) translateX(18px) scale(2.8); opacity: 0; }
+}
+
+@keyframes rotateCW {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes rotateCCW {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+
+@keyframes eyePulse {
+  0%,100% { opacity: 0.85; filter: blur(0px) brightness(1.1) drop-shadow(0 0 4px white); }
+  50%     { opacity: 1;    filter: blur(0.6px) brightness(1.8) drop-shadow(0 0 10px white); }
+}
+
+@keyframes breathing {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.03); }
+}
+
+@keyframes rainFall {
+  0%   { transform: translateY(-120%); }
+  100% { transform: translateY(120%); }
+}
+
+@keyframes glowPulse {
+  0%,100% { opacity: 0.6; }
+  50%     { opacity: 1; }
+}
+
+@keyframes dataStream {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 0% 200%; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-barPulse {
+  animation: barPulse 0.6s ease-in-out infinite;
+}
+
+.animate-barListen {
+  animation: barListen 1.8s ease-in-out infinite;
+}
+
+.animate-rotateSlow {
+  animation: rotateSlow 10s linear infinite;
+}
+
+.animate-rotateReverse {
+  animation: rotateReverse 14s linear infinite;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+/* --- Status-driven glow colors ------------------------------- */
+
+.status-active   { --status-color: #00ff88; }
+.status-idle     { --status-color: #ffaa00; }
+.status-blocked  { --status-color: #ff8800; }
+.status-error    { --status-color: #ff4444; }
+
+.status-glow {
+  box-shadow: 0 0 8px var(--status-color),
+              0 0 20px color-mix(in srgb, var(--status-color) 40%, transparent);
+}
